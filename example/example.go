@@ -13,6 +13,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/marcopaganini/gosmart"
 	"golang.org/x/net/context"
@@ -25,18 +26,36 @@ const (
 	defaultPort = 4567
 )
 
+var (
+	flagClient = flag.String("client", "", "OAuth Client ID")
+	flagSecret = flag.String("secret", "", "OAuth Secret")
+
+	config oauth2.Config
+)
+
 func main() {
-	config := oauth2.Config{
-		ClientID:     "2a4f6e21-a052-4e0b-98c2-46f38c45b433",
-		ClientSecret: "c0c6a861-ea5f-4bc4-a8ee-9e2b64d40ed2",
-		Scopes:       []string{"app"},
-		Endpoint:     gosmart.Endpoint,
-	}
+	flag.Parse()
+
+	// No date on log messages
+	log.SetFlags(0)
 
 	// Attempt to load token from the local storage. If an error occurs
 	// of the token is invalid (expired, etc), trigger the OAuth process.
 	token, err := gosmart.LoadToken("")
 	if err != nil || !token.Valid() {
+		// We need client and secret to fetch a new token.
+		fmt.Println(*flagClient, *flagSecret)
+		if *flagClient == "" || *flagSecret == "" {
+			log.Fatalf("Must specify Client ID (--client) and Secret (--secret)")
+		}
+		// Create new authentication config for our App
+		config = oauth2.Config{
+			ClientID:     *flagClient,
+			ClientSecret: *flagSecret,
+			Scopes:       []string{"app"},
+			Endpoint:     gosmart.Endpoint,
+		}
+
 		gst, err := gosmart.New(defaultPort, config)
 		if err != nil {
 			log.Fatalf("Error creating GoSmart struct: %q\n", err)
