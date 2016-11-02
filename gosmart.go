@@ -38,12 +38,12 @@ const (
 type Auth struct {
 	port             int
 	config           oauth2.Config
-	rchan            chan OAuthReturn
+	rchan            chan oauthReturn
 	oauthStateString string
 }
 
-// OAuthReturn contains the values returned by the OAuth callback handler.
-type OAuthReturn struct {
+// oauthReturn contains the values returned by the OAuth callback handler.
+type oauthReturn struct {
 	token *oauth2.Token
 	err   error
 }
@@ -80,7 +80,7 @@ func NewAuth(port int, config oauth2.Config) (*Auth, error) {
 	return &Auth{
 		port:             port,
 		config:           config,
-		rchan:            make(chan OAuthReturn),
+		rchan:            make(chan oauthReturn),
 		oauthStateString: rnd,
 	}, nil
 }
@@ -121,7 +121,7 @@ func (g *Auth) handleOAuthCallback(w http.ResponseWriter, r *http.Request) {
 	// Make sure we have the same "state" as our request.
 	state := r.FormValue("state")
 	if state != g.oauthStateString {
-		g.rchan <- OAuthReturn{
+		g.rchan <- oauthReturn{
 			token: nil,
 			err:   fmt.Errorf("invalid oauth state, expected %q, got %q", g.oauthStateString, state),
 		}
@@ -132,7 +132,7 @@ func (g *Auth) handleOAuthCallback(w http.ResponseWriter, r *http.Request) {
 	code := r.FormValue("code")
 	token, err := g.config.Exchange(oauth2.NoContext, code)
 	if err != nil {
-		g.rchan <- OAuthReturn{
+		g.rchan <- oauthReturn{
 			token: nil,
 			err:   fmt.Errorf("code exchange failed: %q", err),
 		}
@@ -140,7 +140,7 @@ func (g *Auth) handleOAuthCallback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Return token.
-	g.rchan <- OAuthReturn{
+	g.rchan <- oauthReturn{
 		token: token,
 		err:   nil,
 	}
