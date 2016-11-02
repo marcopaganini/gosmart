@@ -62,6 +62,14 @@ type endpoints struct {
 	URL     string `json:"url"`
 }
 
+// Endpoint contains the oauth2.Endpoint definitions for smartthings.
+var (
+	Endpoint = oauth2.Endpoint{
+		AuthURL:  "https://graph.api.smartthings.com/oauth/authorize",
+		TokenURL: "https://graph.api.smartthings.com/oauth/token",
+	}
+)
+
 // New creates a new GoSmart struct
 func New(port int, config oauth2.Config) (*GoSmart, error) {
 	rnd, err := randomString(16)

@@ -30,10 +30,7 @@ func main() {
 		ClientID:     "2a4f6e21-a052-4e0b-98c2-46f38c45b433",
 		ClientSecret: "c0c6a861-ea5f-4bc4-a8ee-9e2b64d40ed2",
 		Scopes:       []string{"app"},
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  "https://graph.api.smartthings.com/oauth/authorize",
-			TokenURL: "https://graph.api.smartthings.com/oauth/token",
-		},
+		Endpoint:     gosmart.Endpoint,
 	}
 
 	// Attempt to load token from the local storage. If an error occurs
