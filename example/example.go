@@ -23,7 +23,8 @@ import (
 )
 
 const (
-	defaultPort = 4567
+	defaultPort     = 4567
+	tokenFilePrefix = ".example_st_token"
 )
 
 var (
@@ -39,15 +40,17 @@ func main() {
 	// No date on log messages
 	log.SetFlags(0)
 
+	// We need client and secret to fetch a new token.
+	if *flagClient == "" || *flagSecret == "" {
+		log.Fatalf("Must specify Client ID (--client) and Secret (--secret)")
+	}
+
 	// Attempt to load token from the local storage. If an error occurs
 	// of the token is invalid (expired, etc), trigger the OAuth process.
-	token, err := gosmart.LoadToken("")
+	tFile := tokenFilePrefix + "_" + *flagClient
+
+	token, err := gosmart.LoadToken(tFile)
 	if err != nil || !token.Valid() {
-		// We need client and secret to fetch a new token.
-		fmt.Println(*flagClient, *flagSecret)
-		if *flagClient == "" || *flagSecret == "" {
-			log.Fatalf("Must specify Client ID (--client) and Secret (--secret)")
-		}
 		// Create new authentication config for our App
 		config = oauth2.Config{
 			ClientID:     *flagClient,
@@ -58,19 +61,19 @@ func main() {
 
 		gst, err := gosmart.NewAuth(defaultPort, config)
 		if err != nil {
-			log.Fatalf("Error creating GoSmart struct: %q\n", err)
+			log.Fatalln(err)
 		}
 
 		fmt.Printf("Please login by visiting http://localhost:%d\n", defaultPort)
 		token, err = gst.GetOAuthToken()
 		if err != nil {
-			log.Fatalf("Error generating token: %q\n", err)
+			log.Fatalln(err)
 		}
 
 		// Save new token.
-		err = gosmart.SaveToken("", token)
+		err = gosmart.SaveToken(tFile, token)
 		if err != nil {
-			log.Fatalf("Error saving token: %q\n", err)
+			log.Fatalln(err)
 		}
 	}
 
@@ -82,14 +85,14 @@ func main() {
 	// for this session should use this URL, followed by the desired URL path.
 	endpoint, err := gosmart.GetEndPointsURI(client)
 	if err != nil {
-		log.Fatalf("Error fetching endpoints: %q\n", err)
+		log.Fatalln(err)
 		return
 	}
 
 	// Fetch /temperature
 	resp, err := client.Get(endpoint + "/temperature")
 	if err != nil {
-		log.Fatalf("Error getting temperature %q\n", err)
+		log.Fatalln()
 		return
 	}
 	contents, err := ioutil.ReadAll(resp.Body)

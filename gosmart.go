@@ -16,6 +16,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -31,7 +32,7 @@ const (
 	rootPath     = "/"
 
 	// Token save file
-	tokenFile = ".st_token.json"
+	defaultTokenFile = ".st_token.json"
 )
 
 // Auth contains the SmartThings authentication related data.
@@ -172,13 +173,12 @@ func GetEndPointsURI(client *http.Client) (string, error) {
 // LoadToken loads the token from a file on disk. If nil is used for filename
 // a default filename user the user's directory is used.
 func LoadToken(fname string) (*oauth2.Token, error) {
-	if fname == "" {
-		usr, err := user.Current()
-		if err != nil {
-			return nil, err
-		}
-		fname = filepath.Join(usr.HomeDir, tokenFile)
+	// Generate token filename
+	fname, err := tokenFile(fname)
+	if err != nil {
+		return nil, err
 	}
+
 	// Read & Decode JSON
 	blob, err := ioutil.ReadFile(fname)
 	if err != nil {
@@ -195,13 +195,12 @@ func LoadToken(fname string) (*oauth2.Token, error) {
 // SaveToken saves the token to a file on disk. If nil is used for filename
 // a default filename user the user's directory is used.
 func SaveToken(fname string, token *oauth2.Token) error {
-	if fname == "" {
-		usr, err := user.Current()
-		if err != nil {
-			return err
-		}
-		fname = filepath.Join(usr.HomeDir, tokenFile)
+	// Generate token filename
+	fname, err := tokenFile(fname)
+	if err != nil {
+		return err
 	}
+
 	// Encode & Save
 	blob, err := json.Marshal(token)
 	if err != nil {
@@ -219,4 +218,36 @@ func randomString(size int) (string, error) {
 		return "", err
 	}
 	return fmt.Sprintf("%x", b), nil
+}
+
+// tokenFile generates a filename to store the token.
+func tokenFile(fname string) (string, error) {
+	// If fname == "", use defaultTokenFile under user's home.
+	// If fname contains no extension, add ".json"
+	// If fname is absolute, use it as it is now.
+	// Otherwise, return user_home/fname
+
+	// Blank filename? Use default name.
+	if fname == "" {
+		fname = defaultTokenFile
+	}
+
+	d, f := filepath.Split(fname)
+
+	// Add extension if the file does not contain a dot or
+	// if it contains a dot as the first character.
+	if strings.Index(f, ".") < 1 {
+		f += ".json"
+	}
+
+	// Absolute? Returns as it is now.
+	if d != "" {
+		return filepath.Join(d, f), nil
+	}
+
+	usr, err := user.Current()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(usr.HomeDir, f), nil
 }
