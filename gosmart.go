@@ -19,7 +19,6 @@ import (
 )
 
 const (
-	htmlLogin = "<html><body><a href=\"%s\">Log in</a></body></html>"
 	authDone  = "<html><body>Authentication Completed.</body></html>"
 	authError = "<html><body>AUthentication error. Please see terminal output for details.</body></html>"
 
@@ -94,10 +93,10 @@ func (g *GoSmart) GetOAuthToken() (*oauth2.Token, error) {
 	return ret.token, ret.err
 }
 
-// handleMain presents a link to start the OAuth authentication process.
+// handleMain redirects the user to the main authentication page.
 func (g *GoSmart) handleMain(w http.ResponseWriter, r *http.Request) {
 	url := g.config.AuthCodeURL(g.oauthStateString)
-	fmt.Fprintf(w, htmlLogin, url)
+	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
 // handleError shows a page indicating the authentication has failed.
@@ -142,7 +141,6 @@ func (g *GoSmart) handleOAuthCallback(w http.ResponseWriter, r *http.Request) {
 		err:   nil,
 	}
 	// Redirect user to "Authentication done" page
-	fmt.Println("Redirecting...")
 	http.Redirect(w, r, donePath, http.StatusTemporaryRedirect)
 	return
 }
