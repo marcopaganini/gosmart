@@ -26,7 +26,6 @@ const (
 	endPointsURI = "https://graph.api.smartthings.com/api/smartapps/endpoints"
 
 	// URL paths used for Oauth authentication on localhost
-	errorPath    = "/OAuthError"
 	callbackPath = "/OAuthCallback"
 	donePath     = "/OauthDone"
 	rootPath     = "/"
@@ -82,7 +81,6 @@ func New(port int, config oauth2.Config) (*GoSmart, error) {
 // Oauth token from the smartthings website.
 func (g *GoSmart) GetOAuthToken() (*oauth2.Token, error) {
 	http.HandleFunc(rootPath, g.handleMain)
-	http.HandleFunc(errorPath, g.handleError)
 	http.HandleFunc(donePath, g.handleDone)
 	http.HandleFunc(callbackPath, g.handleOAuthCallback)
 
@@ -115,7 +113,6 @@ func (g *GoSmart) handleOAuthCallback(w http.ResponseWriter, r *http.Request) {
 	// Make sure we have the same "state" as our request.
 	state := r.FormValue("state")
 	if state != g.oauthStateString {
-		http.Redirect(w, r, errorPath, http.StatusTemporaryRedirect)
 		g.rchan <- OAuthReturn{
 			token: nil,
 			err:   fmt.Errorf("invalid oauth state, expected %q, got %q", g.oauthStateString, state),
@@ -127,7 +124,6 @@ func (g *GoSmart) handleOAuthCallback(w http.ResponseWriter, r *http.Request) {
 	code := r.FormValue("code")
 	token, err := g.config.Exchange(oauth2.NoContext, code)
 	if err != nil {
-		http.Redirect(w, r, errorPath, http.StatusTemporaryRedirect)
 		g.rchan <- OAuthReturn{
 			token: nil,
 			err:   fmt.Errorf("code exchange failed: %q", err),
