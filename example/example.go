@@ -56,7 +56,7 @@ func main() {
 			Endpoint:     gosmart.Endpoint,
 		}
 
-		gst, err := gosmart.New(defaultPort, config)
+		gst, err := gosmart.NewAuth(defaultPort, config)
 		if err != nil {
 			log.Fatalf("Error creating GoSmart struct: %q\n", err)
 		}

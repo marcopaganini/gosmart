@@ -34,18 +34,18 @@ const (
 	tokenFile = ".st_token.json"
 )
 
-// OAuthReturn contains the values returned by the OAuth callback handler.
-type OAuthReturn struct {
-	token *oauth2.Token
-	err   error
-}
-
-// GoSmart contains the SmartThings related data.
-type GoSmart struct {
+// Auth contains the SmartThings authentication related data.
+type Auth struct {
 	port             int
 	config           oauth2.Config
 	rchan            chan OAuthReturn
 	oauthStateString string
+}
+
+// OAuthReturn contains the values returned by the OAuth callback handler.
+type OAuthReturn struct {
+	token *oauth2.Token
+	err   error
 }
 
 // endpoints holds the definition of an Endpoint
@@ -70,14 +70,14 @@ var (
 	}
 )
 
-// New creates a new GoSmart struct
-func New(port int, config oauth2.Config) (*GoSmart, error) {
+// NewAuth creates a new Auth struct
+func NewAuth(port int, config oauth2.Config) (*Auth, error) {
 	rnd, err := randomString(16)
 	if err != nil {
 		return nil, err
 	}
 
-	return &GoSmart{
+	return &Auth{
 		port:             port,
 		config:           config,
 		rchan:            make(chan OAuthReturn),
@@ -87,7 +87,7 @@ func New(port int, config oauth2.Config) (*GoSmart, error) {
 
 // GetOAuthToken sets up the handler and a local HTTP server and fetches an
 // Oauth token from the smartthings website.
-func (g *GoSmart) GetOAuthToken() (*oauth2.Token, error) {
+func (g *Auth) GetOAuthToken() (*oauth2.Token, error) {
 	http.HandleFunc(rootPath, g.handleMain)
 	http.HandleFunc(donePath, g.handleDone)
 	http.HandleFunc(callbackPath, g.handleOAuthCallback)
@@ -100,24 +100,24 @@ func (g *GoSmart) GetOAuthToken() (*oauth2.Token, error) {
 }
 
 // handleMain redirects the user to the main authentication page.
-func (g *GoSmart) handleMain(w http.ResponseWriter, r *http.Request) {
+func (g *Auth) handleMain(w http.ResponseWriter, r *http.Request) {
 	url := g.config.AuthCodeURL(g.oauthStateString)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
 // handleError shows a page indicating the authentication has failed.
-func (g *GoSmart) handleError(w http.ResponseWriter, r *http.Request) {
+func (g *Auth) handleError(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, authError)
 }
 
 // handleDone shows a page indicating the authentication is finished.
-func (g *GoSmart) handleDone(w http.ResponseWriter, r *http.Request) {
+func (g *Auth) handleDone(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, authDone)
 }
 
 // handleOauthCallback fetches the callback from the OAuth provider and parses
 // the URL, extracting the code and then exchanging it for a token.
-func (g *GoSmart) handleOAuthCallback(w http.ResponseWriter, r *http.Request) {
+func (g *Auth) handleOAuthCallback(w http.ResponseWriter, r *http.Request) {
 	// Make sure we have the same "state" as our request.
 	state := r.FormValue("state")
 	if state != g.oauthStateString {
