@@ -26,34 +26,40 @@ definition(
 
 
 preferences {
-	section ("Allow external service to control these things...") {
-		input "switches", "capability.switch", multiple: true, required: true
+    section ("Allow external service to control these things...") {
+        input "battery", "capability.battery", multiple: true, required: true
+        input "switches", "capability.switch", multiple: true, required: true
         input "temperature", "capability.temperatureMeasurement", multiple: true, required: true
-	}
+  }
 }
 
 mappings {
-  path("/switches") {
-    action: [
-      GET: "listSwitches"
-    ]
-  }
-  path("/switches/:command") {
-    action: [
-      PUT: "updateSwitches"
-    ]
-  }
-  path("/temperature") {
-    action: [
-      GET: "listTemperatureMeasurements"
-    ]
-  }
+    path("/battery") {
+        action: [
+            GET: "listBattery"
+        ]
+    }
+
+    path("/switches") {
+        action: [
+            GET: "listSwitches"
+        ]
+    }
+    path("/switches/:command") {
+        action: [
+            PUT: "updateSwitches"
+        ]
+    }
+    path("/temperature") {
+        action: [
+            GET: "listTemperatureMeasurements"
+        ]
+    }
 }
 
 // returns a list like
 // [[name: "kitchen lamp", value: "off"], [name: "bathroom", value: "on"]]
 def listSwitches() {
-
     def resp = []
     switches.each {
         resp << [name: it.displayName, value: it.currentValue("switch")]
@@ -87,6 +93,15 @@ def listTemperatureMeasurements() {
     }
     return resp
 }
+
+def listBattery() {
+    def resp = []
+    battery.each {
+        resp << [name: it.displayName, value: it.currentValue("battery")]
+    }
+    return resp
+}
+
 
 def installed() {}
 

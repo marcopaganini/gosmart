@@ -89,7 +89,7 @@ func main() {
 		return
 	}
 
-	// Fetch /temperature
+	// Fetch temperature
 	resp, err := client.Get(endpoint + "/temperature")
 	if err != nil {
 		log.Fatalln()
@@ -98,4 +98,14 @@ func main() {
 	contents, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	fmt.Printf("Temperature content: %s\n", contents)
+
+	// Fetch batttery
+	resp, err = client.Get(endpoint + "/battery")
+	if err != nil {
+		log.Fatalln()
+		return
+	}
+	contents, err = ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	fmt.Printf("Battery content: %s\n", contents)
 }
