@@ -31,7 +31,7 @@ var (
 	flagClient = flag.String("client", "", "OAuth Client ID")
 	flagSecret = flag.String("secret", "", "OAuth Secret")
 
-	config oauth2.Config
+	config *oauth2.Config
 )
 
 func main() {
@@ -51,14 +51,9 @@ func main() {
 
 	token, err := gosmart.LoadToken(tFile)
 	if err != nil || !token.Valid() {
-		// Create new authentication config for our App
-		config = oauth2.Config{
-			ClientID:     *flagClient,
-			ClientSecret: *flagSecret,
-			Scopes:       []string{"app"},
-			Endpoint:     gosmart.Endpoint,
-		}
-
+		// Create an OAuth2.Config object and use it to retrieve
+		// the token from the SmartThings website.
+		config = gosmart.NewOAuthConfig(*flagClient, *flagSecret)
 		gst, err := gosmart.NewAuth(defaultPort, config)
 		if err != nil {
 			log.Fatalln(err)

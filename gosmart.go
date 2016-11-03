@@ -38,7 +38,7 @@ const (
 // Auth contains the SmartThings authentication related data.
 type Auth struct {
 	port             int
-	config           oauth2.Config
+	config           *oauth2.Config
 	rchan            chan oauthReturn
 	oauthStateString string
 }
@@ -49,7 +49,7 @@ type oauthReturn struct {
 	err   error
 }
 
-// endpoints holds the definition of an Endpoint
+// endpoints holds the values returned by the SmartThings endpoints URI.
 type endpoints struct {
 	OauthClient struct {
 		ClientID string `json:"clientId"`
@@ -63,16 +63,22 @@ type endpoints struct {
 	URL     string `json:"url"`
 }
 
-// Endpoint contains the oauth2.Endpoint definitions for smartthings.
-var (
-	Endpoint = oauth2.Endpoint{
-		AuthURL:  "https://graph.api.smartthings.com/oauth/authorize",
-		TokenURL: "https://graph.api.smartthings.com/oauth/token",
+// NewOAuthConfig creates a new oauth2.config structure with the
+// correct parameters to use smartthings.
+func NewOAuthConfig(client, secret string) *oauth2.Config {
+	return &oauth2.Config{
+		ClientID:     client,
+		ClientSecret: secret,
+		Scopes:       []string{"app"},
+		Endpoint: oauth2.Endpoint{
+			AuthURL:  "https://graph.api.smartthings.com/oauth/authorize",
+			TokenURL: "https://graph.api.smartthings.com/oauth/token",
+		},
 	}
-)
+}
 
 // NewAuth creates a new Auth struct
-func NewAuth(port int, config oauth2.Config) (*Auth, error) {
+func NewAuth(port int, config *oauth2.Config) (*Auth, error) {
 	rnd, err := randomString(16)
 	if err != nil {
 		return nil, err
