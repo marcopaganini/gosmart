@@ -48,7 +48,7 @@ func main() {
 		if *flagClient == "" {
 			log.Fatalf("Must specify Client ID (--client) or Token File (--tokenfile)")
 		}
-		tfile = tokenFilePrefix + "_" + *flagClient
+		tfile = tokenFilePrefix + "_" + *flagClient + ".json"
 	}
 
 	// Attempt to load token from the local storage. If an error occurs

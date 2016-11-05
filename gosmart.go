@@ -16,7 +16,6 @@ import (
 	"os/user"
 	"path/filepath"
 	"strconv"
-	"strings"
 )
 
 const (
@@ -228,32 +227,20 @@ func randomString(size int) (string, error) {
 
 // tokenFile generates a filename to store the token.
 func tokenFile(fname string) (string, error) {
-	// If fname == "", use defaultTokenFile under user's home.
-	// If fname contains no extension, add ".json"
-	// If fname is absolute, use it as it is now.
-	// Otherwise, return user_home/fname
+	// If filename is an absolute path, return it as is.
+	// If filename != "", return user_home/filename
+	// Otherwise, return user_home/defaultTokenFile
 
-	// Blank filename? Use default name.
-	if fname == "" {
-		fname = defaultTokenFile
-	}
-
-	d, f := filepath.Split(fname)
-
-	// Add extension if the file does not contain a dot or
-	// if it contains a dot as the first character.
-	if strings.Index(f, ".") < 1 {
-		f += ".json"
-	}
-
-	// Absolute? Returns as it is now.
-	if d != "" {
-		return filepath.Join(d, f), nil
+	if filepath.IsAbs(fname) {
+		return fname, nil
 	}
 
 	usr, err := user.Current()
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(usr.HomeDir, f), nil
+	if fname != "" {
+		return filepath.Join(usr.HomeDir, fname), nil
+	}
+	return filepath.Join(usr.HomeDir, defaultTokenFile), nil
 }
