@@ -55,33 +55,39 @@ func main() {
 	// of the token is invalid (expired, etc), trigger the OAuth process.
 	token, err := gosmart.LoadToken(tfile)
 	if err != nil || !token.Valid() {
-		// Create an OAuth2.Config object and use it to retrieve
-		// the token from the SmartThings website. At this point,
-		// we need both the ClientID and the Secret.
+
+		// Create an OAuth2.Config object and use it to retrieve the token from
+		// the SmartThings website. At this point, we need both the ClientID
+		// and the Secret, so we fail if those were not specified.
 		if *flagClient == "" || *flagSecret == "" {
 			log.Fatal("Need both Client ID (--client) and Secret (--secret) to generate new Token")
 		}
-
 		config = gosmart.NewOAuthConfig(*flagClient, *flagSecret)
+
+		// Retrieve the token from ST.
 		gst, err := gosmart.NewAuth(defaultPort, config)
 		if err != nil {
 			log.Fatalln(err)
 		}
 
+		// To continue the authentication process, the user must use the
+		// browser to log in to the ST website. NewAuth sets a local webserver
+		// and the proper callback URLs to retrieve the token.
 		fmt.Printf("Please login by visiting http://localhost:%d\n", defaultPort)
 		token, err = gst.GetOAuthToken()
 		if err != nil {
 			log.Fatalln(err)
 		}
 
-		// Save new token.
+		// Once we have the token, save it locally for future use.
 		err = gosmart.SaveToken(tfile, token)
 		if err != nil {
 			log.Fatalln(err)
 		}
 	}
 
-	// Create a client with token
+	// Create a client with token. This client will be used for all ST
+	// API operations from here on.
 	ctx := context.Background()
 	client := config.Client(ctx, token)
 
