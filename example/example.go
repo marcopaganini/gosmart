@@ -28,8 +28,9 @@ const (
 )
 
 var (
-	flagClient = flag.String("client", "", "OAuth Client ID")
-	flagSecret = flag.String("secret", "", "OAuth Secret")
+	flagClient    = flag.String("client", "", "OAuth Client ID")
+	flagSecret    = flag.String("secret", "", "OAuth Secret")
+	flagTokenFile = flag.String("tokenfile", "", "Token filename")
 
 	config *oauth2.Config
 )
@@ -40,19 +41,27 @@ func main() {
 	// No date on log messages
 	log.SetFlags(0)
 
-	// We need client and secret to fetch a new token.
-	if *flagClient == "" || *flagSecret == "" {
-		log.Fatalf("Must specify Client ID (--client) and Secret (--secret)")
+	// If we have a token file from the command line, use that directly.
+	// Otherwise, form the name from tokenFilePrefix and the Client ID.
+	tfile := *flagTokenFile
+	if tfile == "" {
+		if *flagClient == "" {
+			log.Fatalf("Must specify Client ID (--client) or Token File (--tokenfile)")
+		}
+		tfile = tokenFilePrefix + "_" + *flagClient
 	}
 
 	// Attempt to load token from the local storage. If an error occurs
 	// of the token is invalid (expired, etc), trigger the OAuth process.
-	tFile := tokenFilePrefix + "_" + *flagClient
-
-	token, err := gosmart.LoadToken(tFile)
+	token, err := gosmart.LoadToken(tfile)
 	if err != nil || !token.Valid() {
 		// Create an OAuth2.Config object and use it to retrieve
-		// the token from the SmartThings website.
+		// the token from the SmartThings website. At this point,
+		// we need both the ClientID and the Secret.
+		if *flagClient == "" || *flagSecret == "" {
+			log.Fatal("Need both Client ID (--client) and Secret (--secret) to generate new Token")
+		}
+
 		config = gosmart.NewOAuthConfig(*flagClient, *flagSecret)
 		gst, err := gosmart.NewAuth(defaultPort, config)
 		if err != nil {
@@ -66,7 +75,7 @@ func main() {
 		}
 
 		// Save new token.
-		err = gosmart.SaveToken(tFile, token)
+		err = gosmart.SaveToken(tfile, token)
 		if err != nil {
 			log.Fatalln(err)
 		}
