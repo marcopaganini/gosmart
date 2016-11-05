@@ -9,6 +9,7 @@ package gosmart
 import (
 	"crypto/rand"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"golang.org/x/oauth2"
 	"io/ioutil"
@@ -32,6 +33,9 @@ const (
 
 	// Token save file
 	defaultTokenFile = ".st_token.json"
+
+	// default local HTTP server port
+	defaultPort = 4567
 )
 
 // Auth contains the SmartThings authentication related data.
@@ -91,9 +95,9 @@ func NewAuth(port int, config *oauth2.Config) (*Auth, error) {
 	}, nil
 }
 
-// GetOAuthToken sets up the handler and a local HTTP server and fetches an
+// FetchOAuthToken sets up the handler and a local HTTP server and fetches an
 // Oauth token from the smartthings website.
-func (g *Auth) GetOAuthToken() (*oauth2.Token, error) {
+func (g *Auth) FetchOAuthToken() (*oauth2.Token, error) {
 	http.HandleFunc(rootPath, g.handleMain)
 	http.HandleFunc(donePath, g.handleDone)
 	http.HandleFunc(callbackPath, g.handleOAuthCallback)
@@ -179,7 +183,7 @@ func GetEndPointsURI(client *http.Client) (string, error) {
 // a default filename user the user's directory is used.
 func LoadToken(fname string) (*oauth2.Token, error) {
 	// Generate token filename
-	fname, err := tokenFile(fname)
+	fname, err := makeTokenFile(fname)
 	if err != nil {
 		return nil, err
 	}
@@ -201,7 +205,7 @@ func LoadToken(fname string) (*oauth2.Token, error) {
 // a default filename user the user's directory is used.
 func SaveToken(fname string, token *oauth2.Token) error {
 	// Generate token filename
-	fname, err := tokenFile(fname)
+	fname, err := makeTokenFile(fname)
 	if err != nil {
 		return err
 	}
@@ -225,8 +229,44 @@ func randomString(size int) (string, error) {
 	return fmt.Sprintf("%x", b), nil
 }
 
+// GetToken returns the token for the ClientID and Secret specified in config.
+// The function attempts to load the token from tokenFile first, and failing
+// that, starts a full token authentication cycle with SmartThings. If
+// tokenFile is blank, the function uses a default name under the current
+// user's home directory. The token is saved to local disk before being
+// returned to the caller.
+//
+// This function represents the most common (and possibly convenient) way to
+// retrieve a token for a given ClientID and Secret.
+func GetToken(tokenFile string, config *oauth2.Config) (*oauth2.Token, error) {
+	// Attempt to load token from local storage. Fallback to full auth cycle.
+	token, err := LoadToken(tokenFile)
+	if err != nil || !token.Valid() {
+		if config.ClientID == "" || config.ClientSecret == "" {
+			return nil, errors.New("Need ClientID and Secret to generate new Token")
+		}
+		gst, err := NewAuth(defaultPort, config)
+		if err != nil {
+			return nil, err
+		}
+
+		fmt.Printf("Please login by visiting http://localhost:%d\n", defaultPort)
+		token, err = gst.FetchOAuthToken()
+		if err != nil {
+			return nil, err
+		}
+
+		// Once we have the token, save it locally for future use.
+		err = SaveToken(tokenFile, token)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return token, nil
+}
+
 // tokenFile generates a filename to store the token.
-func tokenFile(fname string) (string, error) {
+func makeTokenFile(fname string) (string, error) {
 	// If filename is an absolute path, return it as is.
 	// If filename != "", return user_home/filename
 	// Otherwise, return user_home/defaultTokenFile
