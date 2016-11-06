@@ -30,8 +30,6 @@ var (
 	flagClient    = flag.String("client", "", "OAuth Client ID")
 	flagSecret    = flag.String("secret", "", "OAuth Secret")
 	flagTokenFile = flag.String("tokenfile", "", "Token filename")
-
-	config *oauth2.Config
 )
 
 func main() {
@@ -51,7 +49,7 @@ func main() {
 	}
 
 	// Create the oauth2.config object and get a token
-	config = gosmart.NewOAuthConfig(*flagClient, *flagSecret)
+	config := gosmart.NewOAuthConfig(*flagClient, *flagSecret)
 	token, err := gosmart.GetToken(tfile, config)
 	if err != nil {
 		log.Fatalln(err)
