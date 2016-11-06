@@ -17,7 +17,6 @@ import (
 	"fmt"
 	"github.com/marcopaganini/gosmart"
 	"golang.org/x/net/context"
-	"golang.org/x/oauth2"
 	"io/ioutil"
 	"log"
 )
