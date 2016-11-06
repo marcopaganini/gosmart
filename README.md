@@ -81,9 +81,10 @@ At this point, the smartthings part of the installation should be ready.
 
 You can easily run the examples in the `examples` directory and see some output:
 
-* cd to the `examples/simple` directory under the installation tree.
+* Change the current directory (cd) to `examples/simple` under the installation tree.
 
-* Type `go build` to build the `simple` application.
+* Type `go build` to build the `simple` application. If everything goes right, a binary
+called `simple` will be created under the current directory.
 
 * Now run `simple` using the "Client ID" and "Client Secret" for our app. Replace
 `client_id` and `client_secret` below with the values obtained at the time we created the App.
@@ -91,11 +92,13 @@ Type:
 
     ./simple --client client_id --secret client_secret
 
-* As this is the first time we run an authentication for this app, the process will require
-user intervention. A message should display on the screen asking the user to visit
-http://localhost:4567 to complete the log-in process. Visit this link with your favorite browser.
-You'll be redirected to the smartthings.com API website. Proceed to log in normally and indicate
-which devices should be "seen" by this App (normally, all). Confirm your choices.
+* Since this is the first time we try to authenticate this particular
+Client ID and Client Secret pair, the authentication process will require
+user intervention. A message will display on the screen asking the user to
+visit [http://localhost:4567] to complete the authentication process. Visit
+this link with your favorite browser.  You'll be redirected to the
+smartthings.com API website. Proceed to log in normally and indicate which
+devices should be "seen" by this App (normally, all). Confirm your choices.
 
 * At this point, the `simple` program will proceed and show a (crude) output showing the
 temperature and battery reading of your sensors.
@@ -104,3 +107,8 @@ temperature and battery reading of your sensors.
 login process is bypassed. This happens because the library retrieved the token from local storage.
 The `--client` option is only needed because `simple` uses it to form the name of the file containing
 the token. You can also specify a `--tokenfile` option to force saving the token to a specific file.
+
+**Important**: A third party will have  *full access* to your SmartThings IoT network if they
+obtain your token. Make sure to save the token file in a safe location. By default the library saves the
+token file under the current user's directory. You can change this behavior easily by specifying a
+token filename during authentication time. Look at the examples for more details.
