@@ -15,7 +15,6 @@ import (
 	"fmt"
 	"github.com/marcopaganini/gosmart"
 	"golang.org/x/net/context"
-	"golang.org/x/oauth2"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -27,7 +26,7 @@ const (
 )
 
 // TempCapability represents the information returned by the
-// Temperature Capability in Smartthings.
+// Temperature Capability in SmartThings.
 type TempCapability struct {
 	Name  string `json:"name"`
 	Value int    `json:"value"`
@@ -42,15 +41,14 @@ var (
 	flagAPIKey = flag.String("apikey", "", "ThingSpeak write API key")
 
 	// tscmap maps the sensor names to the ThingSpeak channel field numbers.
-	// All SmartThings temperature capable sensors must be added here.
+	// All SmartThings temperature capable sensors must be added here. The
+	// values here are just examples.
 	tscmap = tsChannelMap{
 		"Front Door Sensor":           1,
 		"Garage Door Sensor":          2,
 		"Laundry Door Sensor":         3,
 		"Upper Hallway Motion Sensor": 4,
 	}
-
-	config *oauth2.Config
 )
 
 func main() {
@@ -61,11 +59,11 @@ func main() {
 
 	// Command line processing
 	if *flagAPIKey == "" {
-		log.Fatalln("Need API key (--apikey)")
+		log.Fatalln("Need ThingSpeak write API key (--apikey)")
 	}
 
 	// Retrieve token
-	config = gosmart.NewOAuthConfig(*flagClient, *flagSecret)
+	config := gosmart.NewOAuthConfig(*flagClient, *flagSecret)
 	token, err := gosmart.GetToken(tokenFile, config)
 	if err != nil {
 		log.Fatalln(err)
@@ -112,15 +110,13 @@ func fetchTemperature(client *http.Client, endpoint string) ([]TempCapability, e
 
 // updateThingSpeak updates a thingspeak channel with the relevant data.
 func updateThingSpeak(tscmap tsChannelMap, temps []TempCapability, apikey string) error {
-	var fieldno int
-
 	// Thingspeak uses fieldN fieldnames in their channels.  We use
 	// tsChannelMap to retrieve the correspondence between sensor name and
 	// ThingSpeak channel field number.
 	req := ""
 	for _, t := range temps {
-		ok := false
-		if fieldno, ok = tscmap[t.Name]; !ok {
+		fieldno, ok := tscmap[t.Name]
+		if !ok {
 			log.Printf("Unable to find ThingSpeak field for %q", t.Name)
 			continue
 		}
