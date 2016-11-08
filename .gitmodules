@@ -1,0 +1,3 @@
+[submodule "apismartapp"]
+	path = apismartapp
+	url = https://github.com/jodyalbritton/apismartapp
