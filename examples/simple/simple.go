@@ -17,7 +17,6 @@ import (
 	"fmt"
 	"github.com/marcopaganini/gosmart"
 	"golang.org/x/net/context"
-	"io/ioutil"
 	"log"
 )
 
@@ -29,6 +28,7 @@ var (
 	flagClient    = flag.String("client", "", "OAuth Client ID")
 	flagSecret    = flag.String("secret", "", "OAuth Secret")
 	flagTokenFile = flag.String("tokenfile", "", "Token filename")
+	//flagDevID     = flag.String("devid", "", "Show information about this particular device ID")
 )
 
 func main() {
@@ -67,23 +67,13 @@ func main() {
 		return
 	}
 
-	// Fetch temperature
-	resp, err := client.Get(endpoint + "/temperature")
+	// List devices
+	devices, err := gosmart.GetDevices(client, endpoint)
 	if err != nil {
 		log.Fatalln()
 		return
 	}
-	contents, err := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
-	fmt.Printf("Temperature content: %s\n", contents)
-
-	// Fetch batttery
-	resp, err = client.Get(endpoint + "/battery")
-	if err != nil {
-		log.Fatalln()
-		return
+	for _, d := range devices {
+		fmt.Printf("ID: %s, Name: %q, Display Name: %q\n", d.ID, d.Name, d.DisplayName)
 	}
-	contents, err = ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
-	fmt.Printf("Battery content: %s\n", contents)
 }
