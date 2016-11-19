@@ -34,7 +34,7 @@ First, grab the latest version of gosmart with:
 
 This will install the package under `$GOPATH/src/github.com/marcopaganini/gosmart`
 
-Change to that directory and locate the `webservices.groovy` file under the `groovy`
+Change to that directory and locate the `endpoint.groovy` file under the `apismartapp`
 directory. We'll need this file momentarily.
 
 ### SmartThings API setup
@@ -43,8 +43,7 @@ directory. We'll need this file momentarily.
 a new account (or login if you already have an account).
 
 * Once logged in, click on `My SmartApps`. This will show a list of the current SmartApps
-installed (it could be blank for new accounts). We now need to create a new SmartApp and
-paste our `webservices.groovy` code here.
+installed (it could be blank for new accounts). 
 
 * Click the `New SmartApp` button. The "New SmartApp" form page will appear.
 
@@ -64,8 +63,8 @@ without user intervention.
 * On `Redirect URI`, enter `http://localhost:4567/OAuthCallback`. *Case is important here*
 
 * The application editor will open with a basic App template. Completely delete the editor
-contents and replace it with the contes of `webservices.groovy` in this package (cut & paste
-is your friend, naturally.)
+contents and replace it with the contents of `endpoints.groovy` in this package (copy & paste
+are your friends).
 
 * Click the `Save` Button to save your changes.
 
@@ -100,8 +99,8 @@ this link with your favorite browser.  You'll be redirected to the
 smartthings.com API website. Proceed to log in normally and indicate which
 devices should be "seen" by this App (normally, all). Confirm your choices.
 
-* At this point, the `simple` program will proceed and show a (crude) output showing the
-temperature and battery reading of your sensors.
+* At this point, the `simple` program will proceed and show a (crude) output showing
+some information about your sensors.
 
 * Try running simple again. This time, omit the `--secret` command line option. Notice how the full
 login process is bypassed. This happens because the library retrieved the token from local storage.
