@@ -28,7 +28,7 @@ var (
 	flagClient    = flag.String("client", "", "OAuth Client ID")
 	flagSecret    = flag.String("secret", "", "OAuth Secret")
 	flagTokenFile = flag.String("tokenfile", "", "Token filename")
-	//flagDevID     = flag.String("devid", "", "Show information about this particular device ID")
+	flagDevID     = flag.String("devid", "", "Show information about this particular device ID")
 )
 
 func main() {
@@ -64,16 +64,28 @@ func main() {
 	endpoint, err := gosmart.GetEndPointsURI(client)
 	if err != nil {
 		log.Fatalln(err)
-		return
 	}
 
-	// List devices
-	devices, err := gosmart.GetDevices(client, endpoint)
-	if err != nil {
-		log.Fatalln(err)
-		return
-	}
-	for _, d := range devices {
-		fmt.Printf("ID: %s, Name: %q, Display Name: %q\n", d.ID, d.Name, d.DisplayName)
+	// List devices or get specific info about one device
+	if *flagDevID == "" {
+		devs, err := gosmart.GetDevices(client, endpoint)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		for _, d := range devs {
+			fmt.Printf("ID: %s, Name: %q, Display Name: %q\n", d.ID, d.Name, d.DisplayName)
+		}
+	} else {
+		dev, err := gosmart.GetDeviceInfo(client, endpoint, *flagDevID)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		fmt.Printf("Device ID:      %s\n", dev.ID)
+		fmt.Printf("  Name:         %s\n", dev.Name)
+		fmt.Printf("  Display Name: %s\n", dev.DisplayName)
+		fmt.Printf("Attributes:\n")
+		for k, v := range dev.Attributes {
+			fmt.Printf("  %v: %v\n", k, v)
+		}
 	}
 }
