@@ -25,7 +25,7 @@ func GetDevices(client *http.Client, endpoint string) ([]DeviceList, error) {
 	// For some reason, the /devices handler returns an array of one element,
 	// containing another array with the list of devices.  We avoid the extra
 	// confusion by returning only the first element in the slice.
-	ret := [][]DeviceList{}
+	ret := []DeviceList{}
 
 	uri := endpoint + "/devices"
 	resp, err := client.Get(uri)
@@ -40,5 +40,5 @@ func GetDevices(client *http.Client, endpoint string) ([]DeviceList, error) {
 	if err := json.Unmarshal(contents, &ret); err != nil {
 		return nil, err
 	}
-	return ret[0], nil
+	return ret, nil
 }

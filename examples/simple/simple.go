@@ -70,7 +70,7 @@ func main() {
 	// List devices
 	devices, err := gosmart.GetDevices(client, endpoint)
 	if err != nil {
-		log.Fatalln()
+		log.Fatalln(err)
 		return
 	}
 	for _, d := range devices {
