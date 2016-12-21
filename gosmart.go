@@ -169,6 +169,9 @@ func GetEndPointsURI(client *http.Client) (string, error) {
 	}
 	contents, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
+	if string(contents) == "[]" {
+		return "", fmt.Errorf("endpoint URI returned no content")
+	}
 
 	// Only URI is fetched from JSON string.
 	var ep []endpoints
