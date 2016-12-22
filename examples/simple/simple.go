@@ -29,6 +29,7 @@ var (
 	flagSecret    = flag.String("secret", "", "OAuth Secret")
 	flagTokenFile = flag.String("tokenfile", "", "Token filename")
 	flagDevID     = flag.String("devid", "", "Show information about this particular device ID")
+	flagAll       = flag.Bool("all", false, "Show Information about all devices found")
 )
 
 func main() {
@@ -36,6 +37,10 @@ func main() {
 
 	// No date on log messages
 	log.SetFlags(0)
+
+	if *flagDevID != "" && *flagAll {
+		log.Fatalln("Invalid flag combination: --devid and --all are mutually exclusive.")
+	}
 
 	// If we have a token file from the command line, use that directly.
 	// Otherwise, form the name from tokenFilePrefix and the Client ID.
@@ -66,8 +71,23 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	// List devices or get specific info about one device
-	if *flagDevID == "" {
+	devices := []string{}
+
+	if *flagDevID != "" {
+		devices = append(devices, *flagDevID)
+	}
+	// List all info about devices if --all specified
+	if *flagAll {
+		devs, err := gosmart.GetDevices(client, endpoint)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		for _, d := range devs {
+			devices = append(devices, d.ID)
+		}
+	}
+
+	if len(devices) == 0 {
 		devs, err := gosmart.GetDevices(client, endpoint)
 		if err != nil {
 			log.Fatalln(err)
@@ -76,16 +96,18 @@ func main() {
 			fmt.Printf("ID: %s, Name: %q, Display Name: %q\n", d.ID, d.Name, d.DisplayName)
 		}
 	} else {
-		dev, err := gosmart.GetDeviceInfo(client, endpoint, *flagDevID)
-		if err != nil {
-			log.Fatalln(err)
-		}
-		fmt.Printf("Device ID:      %s\n", dev.ID)
-		fmt.Printf("  Name:         %s\n", dev.Name)
-		fmt.Printf("  Display Name: %s\n", dev.DisplayName)
-		fmt.Printf("Attributes:\n")
-		for k, v := range dev.Attributes {
-			fmt.Printf("  %v: %v\n", k, v)
+		for _, id := range devices {
+			dev, err := gosmart.GetDeviceInfo(client, endpoint, id)
+			if err != nil {
+				log.Fatalln(err)
+			}
+			fmt.Printf("Device ID:      %s\n", dev.ID)
+			fmt.Printf("  Name:         %s\n", dev.Name)
+			fmt.Printf("  Display Name: %s\n", dev.DisplayName)
+			fmt.Printf("  Attributes:\n")
+			for k, v := range dev.Attributes {
+				fmt.Printf("    %v: %v\n", k, v)
+			}
 		}
 	}
 }
