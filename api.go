@@ -36,16 +36,11 @@ type DeviceCommand struct {
 func GetDevices(client *http.Client, endpoint string) ([]DeviceList, error) {
 	ret := []DeviceList{}
 
-	uri := endpoint + "/devices"
-	resp, err := client.Get(uri)
+	contents, err := issueCommand(client, endpoint, "/devices")
 	if err != nil {
 		return nil, err
 	}
-	contents, err := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
-	if err != nil {
-		return nil, err
-	}
+
 	if err := json.Unmarshal(contents, &ret); err != nil {
 		return nil, err
 	}
@@ -56,16 +51,11 @@ func GetDevices(client *http.Client, endpoint string) ([]DeviceList, error) {
 func GetDeviceInfo(client *http.Client, endpoint string, id string) (*DeviceInfo, error) {
 	ret := &DeviceInfo{}
 
-	uri := endpoint + "/devices/" + id
-	resp, err := client.Get(uri)
+	contents, err := issueCommand(client, endpoint, "/devices/"+id)
 	if err != nil {
 		return nil, err
 	}
-	contents, err := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
-	if err != nil {
-		return nil, err
-	}
+
 	if err := json.Unmarshal(contents, &ret); err != nil {
 		return nil, err
 	}
@@ -76,7 +66,20 @@ func GetDeviceInfo(client *http.Client, endpoint string, id string) (*DeviceInfo
 func GetDeviceCommands(client *http.Client, endpoint string, id string) ([]DeviceCommand, error) {
 	ret := []DeviceCommand{}
 
-	uri := endpoint + "/devices/" + id + "/commands"
+	contents, err := issueCommand(client, endpoint, "/devices/"+id+"/commands")
+	if err != nil {
+		return nil, err
+	}
+
+	if err := json.Unmarshal(contents, &ret); err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+// issueCommand sends a given command to an URI and returns the contents
+func issueCommand(client *http.Client, endpoint string, cmd string) ([]byte, error) {
+	uri := endpoint + cmd
 	resp, err := client.Get(uri)
 	if err != nil {
 		return nil, err
@@ -86,8 +89,5 @@ func GetDeviceCommands(client *http.Client, endpoint string, id string) ([]Devic
 	if err != nil {
 		return nil, err
 	}
-	if err := json.Unmarshal(contents, &ret); err != nil {
-		return nil, err
-	}
-	return ret, nil
+	return contents, nil
 }
