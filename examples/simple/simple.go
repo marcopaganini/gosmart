@@ -101,12 +101,25 @@ func main() {
 			if err != nil {
 				log.Fatalln(err)
 			}
-			fmt.Printf("Device ID:      %s\n", dev.ID)
+			fmt.Printf("\nDevice ID:      %s\n", dev.ID)
 			fmt.Printf("  Name:         %s\n", dev.Name)
 			fmt.Printf("  Display Name: %s\n", dev.DisplayName)
 			fmt.Printf("  Attributes:\n")
 			for k, v := range dev.Attributes {
 				fmt.Printf("    %v: %v\n", k, v)
+			}
+
+			fmt.Printf("  Commands & Parameters:\n")
+			cmds, err := gosmart.GetDeviceCommands(client, endpoint, id)
+			for _, cmd := range cmds {
+				fmt.Printf("    %s", cmd.Command)
+				if len(cmd.Params) != 0 {
+					fmt.Printf(" Parameters:")
+					for k, v := range cmd.Params {
+						fmt.Printf(" %s=%s", k, v)
+					}
+				}
+				fmt.Println()
 			}
 		}
 	}
