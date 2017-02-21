@@ -91,13 +91,15 @@ called `simple` will be created under the current directory.
 `client_id` and `client_secret` below with the values obtained at the time we created the App.
 Type:
 
-    ./simple --client client_id --secret client_secret
+```
+  ./simple --client client_id --secret client_secret
+```
 
 * Since this is the first time we try to authenticate this particular
 Client ID and Client Secret pair, the authentication process will require
 user intervention. A message will display on the screen asking the user to
-visit [http://localhost:4567] to complete the authentication process. Visit
-this link with your favorite browser.  You'll be redirected to the
+visit (http://localhost:4567)[http://localhost:4567] to complete the authentication
+process. Visit this link with your favorite browser.  You'll be redirected to the
 smartthings.com API website. Proceed to log in normally and indicate which
 devices should be "seen" by this App (normally, all). Confirm your choices.
 
