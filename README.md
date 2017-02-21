@@ -39,6 +39,8 @@ directory. We'll need this file momentarily.
 
 ### SmartThings API setup
 
+This only needs to be done *once*.
+
 * Navigate to the [SmartThings API website](https://graph.api.smartthings.com/). Register
 a new account (or login if you already have an account).
 
@@ -63,7 +65,7 @@ without user intervention.
 * On `Redirect URI`, enter `http://localhost:4567/OAuthCallback`. *Case is important here*
 
 * The application editor will open with a basic App template. Completely delete the editor
-contents and replace it with the contents of `endpoints.groovy` in this package (copy & paste
+contents and replace it with the contents of `endpoint.groovy` in this package (copy & paste
 are your friends).
 
 * Click the `Save` Button to save your changes.
