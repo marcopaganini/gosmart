@@ -1,5 +1,6 @@
 # gosmart
 [![Go Report Card](https://goreportcard.com/badge/github.com/marcopaganini/gosmart)](https://goreportcard.com/report/github.com/marcopaganini/gosmart)
+[![GoDoc](https://godoc.org/github.com/marcopaganini/gosmart?status.svg)](https://godoc.org/github.com/marcopaganini/gosmart)
 
 A Go (golang) library to interface with the Samsung SmartThings (IoT) API.
 
