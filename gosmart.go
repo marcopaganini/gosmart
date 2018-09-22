@@ -165,9 +165,12 @@ func GetEndPointsURI(client *http.Client) (string, error) {
 	// Fetch the JSON containing our endpoint URI
 	resp, err := client.Get(endPointsURI)
 	if err != nil {
-		return "", fmt.Errorf("error getting endpoints URI %q", err)
+		return "", fmt.Errorf("error getting endpoints URI: %q", err)
 	}
 	contents, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("error reading endpoints URI data: %q", err)
+	}
 	resp.Body.Close()
 	if string(contents) == "[]" {
 		return "", fmt.Errorf("endpoint URI returned no content")
