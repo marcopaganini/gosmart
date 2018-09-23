@@ -249,7 +249,7 @@ func GetToken(tokenFile string, config *oauth2.Config) (*oauth2.Token, error) {
 	token, err := LoadToken(tokenFile)
 	if err != nil || !token.Valid() {
 		if config.ClientID == "" || config.ClientSecret == "" {
-			return nil, errors.New("Need ClientID and Secret to generate new Token")
+			return nil, errors.New("need ClientID and secret to generate a new token")
 		}
 		gst, err := NewAuth(defaultPort, config)
 		if err != nil {
