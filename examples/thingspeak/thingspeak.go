@@ -74,7 +74,7 @@ func main() {
 	client := config.Client(ctx, token)
 
 	// Retrieve Endpoints URI.
-	endpoint, err := gosmart.GetEndPointsURI(client)
+	endpoint, err := gosmart.GetEndPointsURI(client, gosmart.EndPointsURI)
 	if err != nil {
 		log.Fatalln(err)
 		return

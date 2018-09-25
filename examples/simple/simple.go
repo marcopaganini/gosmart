@@ -66,7 +66,7 @@ func main() {
 
 	// Retrieve Endpoints URI. All future accesses to the smartthings API
 	// for this session should use this URL, followed by the desired URL path.
-	endpoint, err := gosmart.GetEndPointsURI(client)
+	endpoint, err := gosmart.GetEndPointsURI(client, gosmart.EndPointsURI)
 	if err != nil {
 		log.Fatalln(err)
 	}

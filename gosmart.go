@@ -23,9 +23,6 @@ const (
 	authDone  = "<html><body>Authentication Completed.</body></html>"
 	authError = "<html><body>AUthentication error. Please see terminal output for details.</body></html>"
 
-	// Endpoints URL
-	endPointsURI = "https://graph.api.smartthings.com/api/smartapps/endpoints"
-
 	// URL paths used for Oauth authentication on localhost
 	callbackPath = "/OAuthCallback"
 	donePath     = "/OauthDone"
@@ -36,6 +33,9 @@ const (
 
 	// default local HTTP server port
 	defaultPort = 4567
+
+	// EndPointsURI contains the main SmartThings URI.
+	EndPointsURI = "https://graph.api.smartthings.com/api/smartapps/endpoints"
 )
 
 // Auth contains the SmartThings authentication related data.
@@ -161,9 +161,9 @@ func (g *Auth) handleOAuthCallback(w http.ResponseWriter, r *http.Request) {
 
 // GetEndPointsURI returns the smartthing endpoints URI. The endpoints
 // URI is the base for all app requests.
-func GetEndPointsURI(client *http.Client) (string, error) {
+func GetEndPointsURI(client *http.Client, uri string) (string, error) {
 	// Fetch the JSON containing our endpoint URI
-	resp, err := client.Get(endPointsURI)
+	resp, err := client.Get(uri)
 	if err != nil {
 		return "", fmt.Errorf("error getting endpoints URI: %q", err)
 	}
