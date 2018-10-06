@@ -64,20 +64,13 @@ func TestGetEndPointsURI(t *testing.T) {
 		uri, err := GetEndPointsURI(server.Client(), reqURL)
 		server.Close()
 
-		if tt.wantError {
-			if err == nil {
-				t.Errorf("Expected error, got nil")
-			}
-			continue
-		}
-		// We don't want errors from this point on.
-		if err != nil {
-			t.Errorf("Expected no error, got %v", err)
+		if !checkerr(t, err, tt.wantError, tt) {
+			fmt.Println("DEBUG: got error, continuing...")
 			continue
 		}
 
 		if uri != tt.wantURI {
-			t.Errorf("Expected URI: %v, got %v", dummyURI, uri)
+			t.Errorf("%+v: Expected URI: %v, got %v", tt, dummyURI, uri)
 		}
 	}
 }
@@ -125,18 +118,7 @@ func TestSaveToken(t *testing.T) {
 
 	for _, tt := range caseTests {
 		err := SaveToken(tt.fname, tt.token)
-
-		if tt.wantError {
-			if err == nil {
-				t.Errorf("%+v: Expected error, got nil", tt)
-			}
-			continue
-		}
-		// We don't want errors from this point on.
-		if err != nil {
-			t.Errorf("%+v: Expected no error, got %v", err)
-			continue
-		}
+		checkerr(t, err, tt.wantError, tt)
 	}
 }
 
@@ -145,4 +127,26 @@ func equals(tb testing.TB, exp, got interface{}) {
 	if !reflect.DeepEqual(exp, got) {
 		tb.Errorf("expected: %#v got: %#v\n\n", exp, got)
 	}
+}
+
+// checkerr checks common error return conditions (wantError true/false vs
+// error true/false). Return false to signal the caller to stop processing of
+// the current case (either an error happened or it makes no sense).  Return
+// true otherwise.
+func checkerr(t *testing.T, err error, wantError bool, v interface{}) bool {
+	// If we want an error, always return false since processing can't
+	// continue on the caller.
+	if wantError {
+		if err == nil {
+			t.Errorf("expected error, got nil: %+v", v)
+		}
+		return false
+	}
+	// Don't want error, got error.
+	if err != nil {
+		t.Errorf("expected no error, got %v, %v", err, v)
+		return false
+	}
+	// Don't want error, didn't get error.
+	return true
 }
