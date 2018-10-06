@@ -16,6 +16,7 @@ import (
 	"net/http"
 	"os/user"
 	"path/filepath"
+	"reflect"
 	"strconv"
 )
 
@@ -185,8 +186,8 @@ func GetEndPointsURI(client *http.Client, uri string) (string, error) {
 	return ep[0].URI, nil
 }
 
-// LoadToken loads the token from a file on disk. If nil is used for filename
-// a default filename user the user's directory is used.
+// LoadToken loads the token from a file on disk. If filename is blank (""),
+// use a default filename under the user's home directory.
 func LoadToken(fname string) (*oauth2.Token, error) {
 	// Generate token filename
 	fname, err := makeTokenFile(fname)
@@ -207,13 +208,18 @@ func LoadToken(fname string) (*oauth2.Token, error) {
 	return token, nil
 }
 
-// SaveToken saves the token to a file on disk. If nil is used for filename
-// a default filename user the user's directory is used.
+// SaveToken saves the token to a file on disk. If filename is blank (""), use
+// a default filename under the user's home directory.
 func SaveToken(fname string, token *oauth2.Token) error {
 	// Generate token filename
 	fname, err := makeTokenFile(fname)
 	if err != nil {
 		return err
+	}
+
+	// Refuse to save empty tokens.
+	if token == nil || reflect.DeepEqual(token, &oauth2.Token{}) {
+		return errors.New("cannot save empty token")
 	}
 
 	// Encode & Save
@@ -271,12 +277,10 @@ func GetToken(tokenFile string, config *oauth2.Config) (*oauth2.Token, error) {
 	return token, nil
 }
 
-// tokenFile generates a filename to store the token.
+// tokenFile generates a filename to store the token. If filename is an
+// absolute path, return it as is.  If filename is non blank, return
+// ${home}/filename. Otherwise, return ${home}/defaultTokenFile
 func makeTokenFile(fname string) (string, error) {
-	// If filename is an absolute path, return it as is.
-	// If filename != "", return user_home/filename
-	// Otherwise, return user_home/defaultTokenFile
-
 	if filepath.IsAbs(fname) {
 		return fname, nil
 	}
