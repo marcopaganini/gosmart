@@ -8,10 +8,12 @@ package gosmart
 
 import (
 	"fmt"
+	"golang.org/x/oauth2"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestGetEndPointsURI(t *testing.T) {
@@ -76,6 +78,65 @@ func TestGetEndPointsURI(t *testing.T) {
 
 		if uri != tt.wantURI {
 			t.Errorf("Expected URI: %v, got %v", dummyURI, uri)
+		}
+	}
+}
+
+func TestSaveToken(t *testing.T) {
+	const (
+		testFilename = "/tmp/gosmart_test.data"
+	)
+
+	dummyToken := &oauth2.Token{
+		AccessToken:  "access",
+		TokenType:    "tokentype",
+		RefreshToken: "refresh",
+		Expiry:       time.Now().Add(time.Hour * 72),
+	}
+
+	caseTests := []struct {
+		fname     string
+		token     *oauth2.Token
+		wantError bool
+	}{
+		// Basic test. Return OK.
+		{
+			fname: testFilename,
+			token: dummyToken,
+		},
+		// Invalid Filename, Error.
+		{
+			fname:     "/tmp/non/existing/dir/test",
+			token:     dummyToken,
+			wantError: true,
+		},
+		// Invalid Token (nil), Error.
+		{
+			fname:     "gosmart_test.data",
+			fname:     testFilename,
+			wantError: true,
+		},
+		// Invalid Token (empty), Error.
+		{
+			fname:     testFilename,
+			token:     &oauth2.Token{},
+			wantError: true,
+		},
+	}
+
+	for _, tt := range caseTests {
+		err := SaveToken(tt.fname, tt.token)
+
+		if tt.wantError {
+			if err == nil {
+				t.Errorf("%+v: Expected error, got nil", tt)
+			}
+			continue
+		}
+		// We don't want errors from this point on.
+		if err != nil {
+			t.Errorf("%+v: Expected no error, got %v", err)
+			continue
 		}
 	}
 }
