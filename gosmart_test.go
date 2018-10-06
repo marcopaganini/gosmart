@@ -65,12 +65,11 @@ func TestGetEndPointsURI(t *testing.T) {
 		server.Close()
 
 		if !checkerr(t, err, tt.wantError, tt) {
-			fmt.Println("DEBUG: got error, continuing...")
 			continue
 		}
 
 		if uri != tt.wantURI {
-			t.Errorf("%+v: Expected URI: %v, got %v", tt, dummyURI, uri)
+			t.Errorf("Expected URI: %v, got %v (%+v)", dummyURI, uri, tt)
 		}
 	}
 }
