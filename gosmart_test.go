@@ -112,7 +112,6 @@ func TestSaveToken(t *testing.T) {
 		},
 		// Invalid Token (nil), Error.
 		{
-			fname:     "gosmart_test.data",
 			fname:     testFilename,
 			wantError: true,
 		},
