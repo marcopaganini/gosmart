@@ -7,11 +7,13 @@
 package gosmart
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/go-test/deep"
 	"golang.org/x/oauth2"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"testing"
 	"time"
 )
@@ -121,10 +123,60 @@ func TestSaveToken(t *testing.T) {
 	}
 }
 
-// equals fails the test if exp is not equal to got.
-func equals(tb testing.TB, exp, got interface{}) {
-	if !reflect.DeepEqual(exp, got) {
-		tb.Errorf("expected: %#v got: %#v\n\n", exp, got)
+func TestLoadToken(t *testing.T) {
+	const (
+		testFilename = "/tmp/gosmart_test.data"
+	)
+
+	dummyToken := &oauth2.Token{
+		AccessToken:  "access",
+		TokenType:    "tokentype",
+		RefreshToken: "refresh",
+		Expiry:       time.Now().Add(time.Hour * 72),
+	}
+	dummyTokenJSON, err := json.Marshal(dummyToken)
+	if err != nil {
+		t.Errorf("unable to generate dummy token: %v", err)
+	}
+
+	caseTests := []struct {
+		fname     string
+		saveToken []byte
+		wantToken []byte
+		wantError bool
+	}{
+		// Basic test. Return OK.
+		{
+			fname:     testFilename,
+			saveToken: dummyTokenJSON,
+			wantToken: dummyTokenJSON,
+		},
+		// Invalid Filename, Error.
+		{
+			fname:     "/tmp/non/existing/dir/test",
+			saveToken: dummyTokenJSON,
+			wantError: true,
+		},
+	}
+
+	for _, tt := range caseTests {
+		// Manually save token. We can't use SaveToken as it will refuse
+		// to save invalid tokens.
+		fname, err := makeTokenFile(testFilename)
+		if !checkerr(t, err, false, "Error creating token file.") {
+			continue
+		}
+		err = ioutil.WriteFile(fname, dummyTokenJSON, 0600)
+		if !checkerr(t, err, false, tt) {
+			continue
+		}
+		token, err := LoadToken(tt.fname)
+		if !checkerr(t, err, tt.wantError, tt) {
+			continue
+		}
+		if d := deep.Equal(dummyToken, token); d != nil {
+			t.Error(d)
+		}
 	}
 }
 
